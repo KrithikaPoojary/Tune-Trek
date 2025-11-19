@@ -1,0 +1,23 @@
+# Ignore node modules (both frontend & backend)
+tune-trek-frontend/node_modules/
+tune-trek-backend/node_modules/
+
+# Env files
+*.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+tune-trek-frontend/build/
+tune-trek-backend/dist/
+
+# IDE folders
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db

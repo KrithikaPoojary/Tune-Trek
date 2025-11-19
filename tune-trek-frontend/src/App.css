@@ -1,0 +1,22 @@
+/* Global styles for TuneTrek */
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa; /* light gray background */
+}
+
+/* Center content on Home page */
+.home-container {
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* Smooth link hover */
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+/* Card shadow (for Login & Register) */
+.card {
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+}
