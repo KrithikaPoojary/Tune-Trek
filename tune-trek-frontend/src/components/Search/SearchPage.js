@@ -1,82 +1,71 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { addSongToPlaylist } from "../../api/playlistApi";
+import { useNavigate } from "react-router-dom";   // ⭐ ADD THIS
+import { searchSongs } from "../../api/axios";
+import "./SearchPage.css";
 
 function SearchPage() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const [songs, setSongs] = useState([]);
   const [message, setMessage] = useState("");
 
-  // Search for songs
+  const navigate = useNavigate();   // ⭐ ADD THIS
+
   const handleSearch = async () => {
-    if (!query) return;
+    setMessage("");
+
+    if (!query.trim()) {
+      setMessage("Please enter a search term.");
+      return;
+    }
 
     try {
-      const response = await axios.get(
-        `https://itunes.apple.com/search?term=${query}&entity=song`
-      );
-
-      setResults(response.data.results);
+      const results = await searchSongs(query);
+      setSongs(results);
     } catch (error) {
-      console.error("Search error:", error);
+      console.error(error);
+      setMessage("Failed to fetch songs.");
     }
   };
 
-  // Add song to playlist
-  const handleAddToPlaylist = async (song) => {
-    try {
-      // Hardcoded playlist ID for testing (you will change later)
-      const playlistId = "example"; 
-
-      const body = {
-        trackId: song.trackId,
-        trackName: song.trackName,
-        artistName: song.artistName,
-        previewUrl: song.previewUrl,
-      };
-
-      await addSongToPlaylist(playlistId, body);
-      setMessage(`Added "${song.trackName}" to playlist!`);
-
-      setTimeout(() => setMessage(""), 2000);
-    } catch (error) {
-      console.error("Error adding to playlist:", error);
-      setMessage("Failed to add song.");
-    }
+  // ⭐ WHEN USER CLICKS A SONG -> OPEN SongPage.js
+  const openSongPage = (song) => {
+    navigate(`/song/${song.trackId}`, { state: { song } });
   };
 
   return (
-    <div className="container mt-4">
-      <h2>Search Music</h2>
+    <div className="search-container">
+      <h2 className="search-title">Search Songs</h2>
 
-      <input
-        type="text"
-        className="form-control"
-        placeholder="Search songs..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      <div className="search-box">
+        <input
+          type="text"
+          placeholder="Search for a song..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button onClick={handleSearch}>Search</button>
+      </div>
 
-      <button className="btn btn-primary mt-2" onClick={handleSearch}>
-        Search
-      </button>
+      {message && <p className="search-message">{message}</p>}
 
-      {message && <div className="alert alert-success mt-3">{message}</div>}
+      <div className="song-list">
+        {songs.map((song) => (
+          <div
+            key={song.trackId}
+            className="song-item"
+            onClick={() => openSongPage(song)}   // ⭐ CLICK SONG TO OPEN Player Page
+            style={{ cursor: "pointer" }}
+          >
+            <img
+              src={song.artworkUrl100}
+              alt="album cover"
+              className="song-image"
+            />
 
-      <div className="mt-4">
-        {results.map((song) => (
-          <div key={song.trackId} className="card mb-2 p-3">
-            <h5>{song.trackName}</h5>
-            <p>{song.artistName}</p>
-
-            <audio controls src={song.previewUrl}></audio>
-
-            <button
-              className="btn btn-success mt-2"
-              onClick={() => handleAddToPlaylist(song)}
-            >
-              ➕ Add to Playlist
-            </button>
+            <div className="song-info">
+              <h4>{song.trackName}</h4>
+              <p>{song.artistName}</p>
+            </div>
           </div>
         ))}
       </div>

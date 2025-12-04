@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import SongPage from "./pages/SongPage";  // ⭐ ADD THIS
 
 // Layout
 import Navbar from "./components/Layout/Navbar";
@@ -29,6 +30,10 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* ⭐ NEW ROUTE FOR SONG PAGE */}
+          <Route path="/song/:id" element={<SongPage />} />
+
         </Routes>
       </div>
     </BrowserRouter>

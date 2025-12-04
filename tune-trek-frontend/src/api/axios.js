@@ -1,25 +1,40 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api";
+const API = "http://localhost:5000";
 
-// Create a playlist
-export const createPlaylist = async (name) => {
-  return await axios.post(`${API_URL}/playlist/create`, { name });
-};
 
-// Get all playlists
-export const getPlaylists = async () => {
-  return await axios.get(`${API_URL}/playlists`);
-};
+// SEARCH SONGS
+export async function searchSongs(query) {
+  return axios
+    .get(`${API}/api/music/search?q=${query}`)
+    .then((res) => res.data);
+}
 
-// Add a song to playlist
-export const addSongToPlaylist = async (playlistId, song) => {
-  return await axios.post(`${API_URL}/playlist/add/${playlistId}`, song);
-};
+// CREATE PLAYLIST
+export async function createPlaylist(name) {
+  return axios
+    .post(`${API}/api/playlist`, { name })
+    .then((res) => res.data);
+}
 
-// Remove a song from playlist
-export const removeSong = async (playlistId, songId) => {
-  return await axios.delete(
-    `${API_URL}/playlist/remove/${playlistId}/${songId}`
-  );
-};
+export async function addSongToPlaylist(id, song) {
+  return axios.post(`${API}/api/playlist/${id}/add`, { song })
+    .then(res => res.data)
+    .catch(err => {
+      console.error("Error adding song:", err.response?.data || err);
+      throw err;
+    });
+}
+
+
+// REMOVE SONG
+export async function removeSong(id, songId) {
+  return axios
+    .delete(`${API}/api/playlist/${id}/remove`, { data: { songId } })
+    .then((res) => res.data);
+}
+
+// GET PLAYLISTS
+export async function getPlaylists() {
+  return axios.get(`${API}/api/playlist`).then((res) => res.data);
+}

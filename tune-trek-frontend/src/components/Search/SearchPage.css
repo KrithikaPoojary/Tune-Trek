@@ -1,0 +1,83 @@
+.search-container {
+  width: 70%;
+  margin: auto;
+  margin-top: 30px;
+}
+
+.search-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.search-box button {
+  padding: 12px 20px;
+  background: #1db954;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.search-box button:hover {
+  background: #17a84a;
+}
+
+.search-message {
+  color: red;
+  margin-bottom: 15px;
+}
+
+.song-list {
+  margin-top: 20px;
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  background: #f8f8f8;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  transition: 0.2s;
+}
+
+.song-item:hover {
+  background: #ececec;
+}
+
+.song-image {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  margin-right: 20px;
+}
+
+.song-info h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.song-info p {
+  margin: 3px 0 0;
+  color: #666;
+}
+
+.audio-control {
+  margin-left: auto;
+}

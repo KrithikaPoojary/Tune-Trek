@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { getPlaylists } from "../../api/playlistApi";
+import { getPlaylists } from "../../api/axios";
 
 function PlaylistsPage() {
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch playlists on page load
   const fetchData = async () => {
     try {
       const data = await getPlaylists();
@@ -28,16 +27,14 @@ function PlaylistsPage() {
       {loading ? (
         <p>Loading playlists...</p>
       ) : playlists.length === 0 ? (
-        <p>No playlists created yet.</p>
+        <p>No playlists yet.</p>
       ) : (
-        <div className="mt-3">
-          {playlists.map((pl) => (
-            <div key={pl._id} className="card mb-3 p-3">
-              <h5>{pl.name}</h5>
-              <p>{pl.songs.length} songs</p>
-            </div>
-          ))}
-        </div>
+        playlists.map((pl) => (
+          <div key={pl._id} className="card mb-3 p-3">
+            <h5>{pl.name}</h5>
+            <p>{pl.songs.length} songs</p>
+          </div>
+        ))
       )}
     </div>
   );
