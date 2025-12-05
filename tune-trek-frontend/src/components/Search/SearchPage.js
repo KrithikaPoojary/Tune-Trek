@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";   // ⭐ ADD THIS
+import { useNavigate } from "react-router-dom";
 import { searchSongs } from "../../api/axios";
-import "./SearchPage.css";
 
 function SearchPage() {
   const [query, setQuery] = useState("");
   const [songs, setSongs] = useState([]);
   const [message, setMessage] = useState("");
-
-  const navigate = useNavigate();   // ⭐ ADD THIS
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
     setMessage("");
@@ -21,50 +19,63 @@ function SearchPage() {
     try {
       const results = await searchSongs(query);
       setSongs(results);
-    } catch (error) {
-      console.error(error);
+      if (results.length === 0) {
+        setMessage("No songs found.");
+      }
+    } catch (err) {
+      console.error("Error searching songs:", err);
       setMessage("Failed to fetch songs.");
     }
   };
 
-  // ⭐ WHEN USER CLICKS A SONG -> OPEN SongPage.js
-  const openSongPage = (song) => {
-    navigate(`/song/${song.trackId}`, { state: { song } });
+  const openSongPage = (index) => {
+    navigate("/song", {
+      state: {
+        songs,
+        index,
+      },
+    });
   };
 
   return (
-    <div className="search-container">
-      <h2 className="search-title">Search Songs</h2>
+    <div className="container mt-4">
+      <h2>Search Songs</h2>
 
-      <div className="search-box">
-        <input
-          type="text"
-          placeholder="Search for a song..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button onClick={handleSearch}>Search</button>
-      </div>
+      <input
+        type="text"
+        className="form-control mb-3"
+        placeholder="Search by song name..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
 
-      {message && <p className="search-message">{message}</p>}
+      <button className="btn btn-primary mb-3" onClick={handleSearch}>
+        Search
+      </button>
 
-      <div className="song-list">
-        {songs.map((song) => (
+      {message && <div className="alert alert-info">{message}</div>}
+
+      {/* Song list */}
+      <div className="row">
+        {songs.map((song, index) => (
           <div
             key={song.trackId}
-            className="song-item"
-            onClick={() => openSongPage(song)}   // ⭐ CLICK SONG TO OPEN Player Page
+            className="col-md-3 mb-4"
             style={{ cursor: "pointer" }}
+            onClick={() => openSongPage(index)}
           >
-            <img
-              src={song.artworkUrl100}
-              alt="album cover"
-              className="song-image"
-            />
-
-            <div className="song-info">
-              <h4>{song.trackName}</h4>
-              <p>{song.artistName}</p>
+            <div className="card h-100 text-center">
+              <img
+                src={song.artworkUrl100}
+                className="card-img-top"
+                alt={song.trackName}
+              />
+              <div className="card-body">
+                <h6 className="card-title">{song.trackName}</h6>
+                <p className="card-text text-muted">{song.artistName}</p>
+                {/* Small preview control just for demo */}
+                
+              </div>
             </div>
           </div>
         ))}

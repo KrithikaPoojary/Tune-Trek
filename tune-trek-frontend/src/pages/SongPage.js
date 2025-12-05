@@ -1,36 +1,115 @@
-import React from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import React, { useRef, useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./SongPage.css";
 
 function SongPage() {
-  const { id } = useParams();
-  const location = useLocation();
+  const { state } = useLocation();
   const navigate = useNavigate();
+  const audioRef = useRef(null);
 
-  const song = location.state?.song;
+  // If user opens /song directly without state
+  const songs = state?.songs || [];
+  const startIndex = state?.index || 0;
 
-  if (!song) {
-    return <h2 style={{ textAlign: "center", marginTop: "40px" }}>Song not found</h2>;
-  }
+  const [currentIndex, setCurrentIndex] = useState(startIndex);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  // If no songs passed, go back to search
+  useEffect(() => {
+    if (!songs.length) {
+      navigate("/search");
+    }
+  }, [songs, navigate]);
+
+  const currentSong = songs[currentIndex];
+
+  // Play / Pause
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  // Previous song
+  const prevSong = () => {
+    if (!songs.length) return;
+    const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
+    setCurrentIndex(prevIndex);
+    setIsPlaying(true);
+    setProgress(0);
+  };
+
+  // Next song
+  const nextSong = () => {
+    if (!songs.length) return;
+    const nextIndex = (currentIndex + 1) % songs.length;
+    setCurrentIndex(nextIndex);
+    setIsPlaying(true);
+    setProgress(0);
+  };
+
+  // Progress bar update
+  const updateProgress = () => {
+    if (!audioRef.current || !audioRef.current.duration) return;
+    const percent =
+      (audioRef.current.currentTime / audioRef.current.duration) * 100;
+    setProgress(percent);
+  };
+
+  // Auto play when song changes and isPlaying=true
+  useEffect(() => {
+    if (audioRef.current && isPlaying) {
+      audioRef.current.play();
+    }
+  }, [currentIndex, isPlaying]);
+
+  if (!currentSong) return null;
 
   return (
-    <div className="song-page">
-      <span className="back-btn" onClick={() => navigate(-1)}>← Back</span>
+    <div className="song-container">
+      {/* Album art */}
+      <img
+        src={currentSong.artworkUrl100.replace("100x100", "500x500")}
+        alt="album"
+        className="album-img"
+      />
 
-      <img className="cover-img" src={song.artworkUrl100.replace("100x100", "600x600")} alt="cover" />
+      {/* Title & artist */}
+      <h2 className="song-title">{currentSong.trackName}</h2>
+      <p className="artist-name">{currentSong.artistName}</p>
 
-      <h2 className="song-title">{song.trackName}</h2>
-      <p className="song-artist">{song.artistName}</p>
-
-      <progress className="progress-bar" value="30" max="100"></progress>
-
-      <button className="play-btn">
-        ⏸ Pause
-      </button>
-
-      <div className="player-wrapper">
-        <audio controls autoPlay src={song.previewUrl} />
+      {/* Progress bar */}
+      <div className="progress-bar">
+        <div className="progress" style={{ width: `${progress}%` }}></div>
       </div>
+
+      {/* Controls: only Prev / Play / Next */}
+      <div className="player-controls">
+        <button className="control-btn" onClick={prevSong}>
+          ⏮
+        </button>
+        <button className="play-btn-big" onClick={togglePlay}>
+          {isPlaying ? "⏸" : "▶️"}
+        </button>
+        <button className="control-btn" onClick={nextSong}>
+          ⏭
+        </button>
+      </div>
+
+      {/* Audio element (hidden) */}
+      <audio
+        ref={audioRef}
+        src={currentSong.previewUrl}
+        onTimeUpdate={updateProgress}
+        onEnded={nextSong}
+      />
     </div>
   );
 }
