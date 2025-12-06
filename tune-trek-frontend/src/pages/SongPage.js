@@ -86,9 +86,23 @@ function SongPage() {
       <p className="artist-name">{currentSong.artistName}</p>
 
       {/* Progress bar */}
-      <div className="progress-bar">
-        <div className="progress" style={{ width: `${progress}%` }}></div>
-      </div>
+      <input
+  type="range"
+  className="seek-bar"
+  min="0"
+  max="100"
+  value={progress}
+  onChange={(e) => {
+    const newValue = e.target.value;
+    setProgress(newValue);
+
+    if (audioRef.current && audioRef.current.duration) {
+      const newTime = (newValue / 100) * audioRef.current.duration;
+      audioRef.current.currentTime = newTime;
+    }
+  }}
+/>
+
 
       {/* Controls: only Prev / Play / Next */}
       <div className="player-controls">
