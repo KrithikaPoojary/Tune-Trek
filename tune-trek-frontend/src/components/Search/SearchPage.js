@@ -10,7 +10,7 @@ function SearchPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // ✅ Read query from URL (category click)
+  // Read query from URL
   const defaultQuery = searchParams.get("query");
 
   const handleSearch = async (searchText) => {
@@ -35,7 +35,7 @@ function SearchPage() {
     }
   };
 
-  // ✅ AUTO SEARCH when coming from Home category
+  // Auto search when coming from Home / Explore
   useEffect(() => {
     if (defaultQuery) {
       setQuery(defaultQuery);
@@ -45,10 +45,7 @@ function SearchPage() {
 
   const openSongPage = (index) => {
     navigate("/song", {
-      state: {
-        songs,
-        index,
-      },
+      state: { songs, index },
     });
   };
 
@@ -56,17 +53,24 @@ function SearchPage() {
     <div className="container mt-4">
       <h2>Search Songs</h2>
 
-      <input
-        type="text"
-        className="form-control mb-3"
-        placeholder="Search by song name..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      {/* 🔍 SEARCH BAR + BUTTON INLINE */}
+      <div className="d-flex gap-2 mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Search by song name..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
 
-      <button className="btn btn-primary mb-3" onClick={() => handleSearch()}>
-        Search
-      </button>
+        <button
+          className="btn btn-primary"
+          onClick={() => handleSearch()}
+          style={{ whiteSpace: "nowrap" }}
+        >
+          Search
+        </button>
+      </div>
 
       {message && <div className="alert alert-info">{message}</div>}
 
@@ -79,11 +83,12 @@ function SearchPage() {
             style={{ cursor: "pointer" }}
             onClick={() => openSongPage(index)}
           >
-            <div className="card h-100 text-center">
+            <div className="card h-100 text-center shadow-sm">
               <img
                 src={song.artworkUrl100}
                 className="card-img-top"
                 alt={song.trackName}
+                style={{ height: "180px", objectFit: "cover" }}
               />
               <div className="card-body">
                 <h6 className="card-title">{song.trackName}</h6>
