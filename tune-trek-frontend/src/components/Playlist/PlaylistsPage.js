@@ -1,40 +1,57 @@
 import React, { useEffect, useState } from "react";
-import { getPlaylists } from "../../api/axios";
+import { useNavigate } from "react-router-dom";
+import { getPlaylistSongs } from "../../utils/playlistStorage";
 
 function PlaylistsPage() {
-  const [playlists, setPlaylists] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchData = async () => {
-    try {
-      const data = await getPlaylists();
-      setPlaylists(data);
-    } catch (error) {
-      console.error("Error loading playlists:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [songs, setSongs] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchData();
+    const playlistSongs = getPlaylistSongs();
+    setSongs(playlistSongs);
   }, []);
+
+  const openSong = (index) => {
+    navigate("/song", {
+      state: {
+        songs,
+        index,
+      },
+    });
+  };
 
   return (
     <div className="container mt-4">
-      <h2>Your Playlists</h2>
+      <h2>Your Playlist</h2>
 
-      {loading ? (
-        <p>Loading playlists...</p>
-      ) : playlists.length === 0 ? (
-        <p>No playlists yet.</p>
+      {songs.length === 0 ? (
+        <p className="text-muted mt-3">
+          🎵 No songs yet. Add some from Search.
+        </p>
       ) : (
-        playlists.map((pl) => (
-          <div key={pl._id} className="card mb-3 p-3">
-            <h5>{pl.name}</h5>
-            <p>{pl.songs.length} songs</p>
-          </div>
-        ))
+        <div className="row mt-4">
+          {songs.map((song, index) => (
+            <div
+              key={song.trackId}
+              className="col-md-3 mb-4"
+              style={{ cursor: "pointer" }}
+              onClick={() => openSong(index)}
+            >
+              <div className="card h-100 text-center shadow-sm">
+                <img
+                  src={song.artworkUrl100}
+                  className="card-img-top"
+                  alt={song.trackName}
+                  style={{ height: "180px", objectFit: "cover" }}
+                />
+                <div className="card-body">
+                  <h6>{song.trackName}</h6>
+                  <p className="text-muted">{song.artistName}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
