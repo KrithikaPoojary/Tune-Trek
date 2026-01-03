@@ -7,6 +7,7 @@ import SongPage from "./pages/SongPage";
 import SearchPage from "./components/Search/SearchPage";
 import ExplorePage from "./components/Explore/ExplorePage";
 import PlaylistsPage from "./components/Playlist/PlaylistsPage";
+import PlaylistSongs from "./components/Playlist/PlaylistSongs";
 import ProfilePage from "./components/Profile/ProfilePage";
 
 import Navbar from "./components/Layout/Navbar";
@@ -28,6 +29,9 @@ function App() {
 
         {/* Playlists */}
         <Route path="/playlists" element={<PlaylistsPage />} />
+
+        {/* Playlist Songs */}
+        <Route path="/playlist/:name" element={<PlaylistSongs />} />
 
         {/* Profile */}
         <Route path="/profile" element={<ProfilePage />} />
