@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchSongs } from "../../api/axios";
+import { addSongToPlaylist } from "../../utils/playlistStorage"; // ✅ FIX
 
 function SearchPage() {
   const [query, setQuery] = useState("");
@@ -10,7 +11,6 @@ function SearchPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Read query from URL
   const defaultQuery = searchParams.get("query");
 
   const handleSearch = async (searchText) => {
@@ -35,7 +35,6 @@ function SearchPage() {
     }
   };
 
-  // Auto search when coming from Home / Explore
   useEffect(() => {
     if (defaultQuery) {
       setQuery(defaultQuery);
@@ -53,7 +52,6 @@ function SearchPage() {
     <div className="container mt-4">
       <h2>Search Songs</h2>
 
-      {/* 🔍 SEARCH BAR + BUTTON INLINE */}
       <div className="d-flex gap-2 mb-3">
         <input
           type="text"
@@ -66,7 +64,6 @@ function SearchPage() {
         <button
           className="btn btn-primary"
           onClick={() => handleSearch()}
-          style={{ whiteSpace: "nowrap" }}
         >
           Search
         </button>
@@ -74,7 +71,6 @@ function SearchPage() {
 
       {message && <div className="alert alert-info">{message}</div>}
 
-      {/* SONG LIST */}
       <div className="row">
         {songs.map((song, index) => (
           <div
@@ -95,6 +91,17 @@ function SearchPage() {
                 <p className="card-text text-muted">
                   {song.artistName}
                 </p>
+
+                <button
+                  className="btn btn-sm btn-outline-primary mt-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addSongToPlaylist(song);
+                    alert(`"${song.trackName}" added to My Playlist`);
+                  }}
+                >
+                  ➕ Add to Playlist
+                </button>
               </div>
             </div>
           </div>

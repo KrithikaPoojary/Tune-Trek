@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { addSongToPlaylist } from "../utils/playlistStorage";
 import "./SongPage.css";
 
 function SongPage() {
@@ -7,7 +8,7 @@ function SongPage() {
   const navigate = useNavigate();
   const audioRef = useRef(null);
 
-  // If user opens /song directly without state
+  // Songs passed from Search / Playlist
   const songs = state?.songs || [];
   const startIndex = state?.index || 0;
 
@@ -15,7 +16,7 @@ function SongPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // If no songs passed, go back to search
+  // If opened directly without song data
   useEffect(() => {
     if (!songs.length) {
       navigate("/search");
@@ -24,7 +25,7 @@ function SongPage() {
 
   const currentSong = songs[currentIndex];
 
-  // Play / Pause
+  /* ▶️ Play / Pause */
   const togglePlay = () => {
     if (!audioRef.current) return;
 
@@ -37,16 +38,17 @@ function SongPage() {
     }
   };
 
-  // Previous song
+  /* ⏮ Previous */
   const prevSong = () => {
     if (!songs.length) return;
-    const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
+    const prevIndex =
+      currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
     setCurrentIndex(prevIndex);
     setIsPlaying(true);
     setProgress(0);
   };
 
-  // Next song
+  /* ⏭ Next */
   const nextSong = () => {
     if (!songs.length) return;
     const nextIndex = (currentIndex + 1) % songs.length;
@@ -55,7 +57,7 @@ function SongPage() {
     setProgress(0);
   };
 
-  // Progress bar update
+  /* Progress bar update */
   const updateProgress = () => {
     if (!audioRef.current || !audioRef.current.duration) return;
     const percent =
@@ -63,7 +65,7 @@ function SongPage() {
     setProgress(percent);
   };
 
-  // Auto play when song changes and isPlaying=true
+  /* Auto play on song change */
   useEffect(() => {
     if (audioRef.current && isPlaying) {
       audioRef.current.play();
@@ -74,37 +76,48 @@ function SongPage() {
 
   return (
     <div className="song-container">
-      {/* Album art */}
+      {/* 🎵 Album Art */}
       <img
         src={currentSong.artworkUrl100.replace("100x100", "500x500")}
         alt="album"
         className="album-img"
       />
 
-      {/* Title & artist */}
+      {/* 🎶 Song Info */}
       <h2 className="song-title">{currentSong.trackName}</h2>
       <p className="artist-name">{currentSong.artistName}</p>
 
-      {/* Progress bar */}
+      {/* ➕ Add to Playlist */}
+      <button
+        className="btn btn-outline-primary mt-3"
+        onClick={() => {
+          addSongToPlaylist(currentSong);
+          alert(`"${currentSong.trackName}" added to My Playlist`);
+        }}
+      >
+        ➕ Add to Playlist
+      </button>
+
+      {/* ⏱ Progress Bar */}
       <input
-  type="range"
-  className="seek-bar"
-  min="0"
-  max="100"
-  value={progress}
-  onChange={(e) => {
-    const newValue = e.target.value;
-    setProgress(newValue);
+        type="range"
+        className="seek-bar"
+        min="0"
+        max="100"
+        value={progress}
+        onChange={(e) => {
+          const newValue = e.target.value;
+          setProgress(newValue);
 
-    if (audioRef.current && audioRef.current.duration) {
-      const newTime = (newValue / 100) * audioRef.current.duration;
-      audioRef.current.currentTime = newTime;
-    }
-  }}
-/>
+          if (audioRef.current && audioRef.current.duration) {
+            const newTime =
+              (newValue / 100) * audioRef.current.duration;
+            audioRef.current.currentTime = newTime;
+          }
+        }}
+      />
 
-
-      {/* Controls: only Prev / Play / Next */}
+      {/* ▶️ Controls */}
       <div className="player-controls">
         <button className="control-btn" onClick={prevSong}>
           ⏮
@@ -117,7 +130,7 @@ function SongPage() {
         </button>
       </div>
 
-      {/* Audio element (hidden) */}
+      {/* 🔊 Audio */}
       <audio
         ref={audioRef}
         src={currentSong.previewUrl}
