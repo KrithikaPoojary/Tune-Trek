@@ -1,24 +1,31 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchSongs } from "../../api/axios";
 
 function SearchPage() {
   const [query, setQuery] = useState("");
   const [songs, setSongs] = useState([]);
   const [message, setMessage] = useState("");
+
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const handleSearch = async () => {
+  // ✅ Read query from URL (category click)
+  const defaultQuery = searchParams.get("query");
+
+  const handleSearch = async (searchText) => {
+    const finalQuery = searchText || query;
+
     setMessage("");
-
-    if (!query.trim()) {
+    if (!finalQuery || !finalQuery.trim()) {
       setMessage("Please enter a search term.");
       return;
     }
 
     try {
-      const results = await searchSongs(query);
+      const results = await searchSongs(finalQuery);
       setSongs(results);
+
       if (results.length === 0) {
         setMessage("No songs found.");
       }
@@ -27,6 +34,14 @@ function SearchPage() {
       setMessage("Failed to fetch songs.");
     }
   };
+
+  // ✅ AUTO SEARCH when coming from Home category
+  useEffect(() => {
+    if (defaultQuery) {
+      setQuery(defaultQuery);
+      handleSearch(defaultQuery);
+    }
+  }, [defaultQuery]);
 
   const openSongPage = (index) => {
     navigate("/song", {
@@ -49,13 +64,13 @@ function SearchPage() {
         onChange={(e) => setQuery(e.target.value)}
       />
 
-      <button className="btn btn-primary mb-3" onClick={handleSearch}>
+      <button className="btn btn-primary mb-3" onClick={() => handleSearch()}>
         Search
       </button>
 
       {message && <div className="alert alert-info">{message}</div>}
 
-      {/* Song list */}
+      {/* SONG LIST */}
       <div className="row">
         {songs.map((song, index) => (
           <div
@@ -72,9 +87,9 @@ function SearchPage() {
               />
               <div className="card-body">
                 <h6 className="card-title">{song.trackName}</h6>
-                <p className="card-text text-muted">{song.artistName}</p>
-                {/* Small preview control just for demo */}
-                
+                <p className="card-text text-muted">
+                  {song.artistName}
+                </p>
               </div>
             </div>
           </div>
