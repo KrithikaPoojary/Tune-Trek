@@ -1,6 +1,9 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { addSongToPlaylist } from "../utils/playlistStorage";
+import {
+  getPlaylists,
+  addSongToPlaylist
+} from "../api/playlistApi";
 import "./SongPage.css";
 
 function SongPage() {
@@ -8,7 +11,6 @@ function SongPage() {
   const navigate = useNavigate();
   const audioRef = useRef(null);
 
-  // Songs passed from Search / Playlist
   const songs = state?.songs || [];
   const startIndex = state?.index || 0;
 
@@ -16,89 +18,69 @@ function SongPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // If opened directly without song data
   useEffect(() => {
-    if (!songs.length) {
-      navigate("/search");
-    }
+    if (!songs.length) navigate("/search");
   }, [songs, navigate]);
 
   const currentSong = songs[currentIndex];
+  if (!currentSong) return null;
 
-  /* ▶️ Play / Pause */
   const togglePlay = () => {
     if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play();
-      setIsPlaying(true);
-    }
+    isPlaying ? audioRef.current.pause() : audioRef.current.play();
+    setIsPlaying(!isPlaying);
   };
 
-  /* ⏮ Previous */
   const prevSong = () => {
-    if (!songs.length) return;
-    const prevIndex =
-      currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
-    setCurrentIndex(prevIndex);
+    setCurrentIndex(
+      currentIndex === 0 ? songs.length - 1 : currentIndex - 1
+    );
     setIsPlaying(true);
     setProgress(0);
   };
 
-  /* ⏭ Next */
   const nextSong = () => {
-    if (!songs.length) return;
-    const nextIndex = (currentIndex + 1) % songs.length;
-    setCurrentIndex(nextIndex);
+    setCurrentIndex((currentIndex + 1) % songs.length);
     setIsPlaying(true);
     setProgress(0);
   };
 
-  /* Progress bar update */
   const updateProgress = () => {
-    if (!audioRef.current || !audioRef.current.duration) return;
-    const percent =
-      (audioRef.current.currentTime / audioRef.current.duration) * 100;
-    setProgress(percent);
+    if (!audioRef.current?.duration) return;
+    setProgress(
+      (audioRef.current.currentTime / audioRef.current.duration) * 100
+    );
   };
 
-  /* Auto play on song change */
-  useEffect(() => {
-    if (audioRef.current && isPlaying) {
-      audioRef.current.play();
+  const handleAddToPlaylist = async () => {
+    try {
+      const res = await getPlaylists();
+      const playlistId = res.data[0]._id;
+      await addSongToPlaylist(playlistId, currentSong);
+      alert("Song added to MongoDB playlist");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add song");
     }
-  }, [currentIndex, isPlaying]);
-
-  if (!currentSong) return null;
+  };
 
   return (
     <div className="song-container">
-      {/* 🎵 Album Art */}
       <img
         src={currentSong.artworkUrl100.replace("100x100", "500x500")}
         alt="album"
         className="album-img"
       />
 
-      {/* 🎶 Song Info */}
-      <h2 className="song-title">{currentSong.trackName}</h2>
-      <p className="artist-name">{currentSong.artistName}</p>
+      <div className="song-info">
+        <h2 className="song-title">{currentSong.trackName}</h2>
+        <p className="artist-name">{currentSong.artistName}</p>
 
-      {/* ➕ Add to Playlist */}
-      <button
-        className="btn btn-outline-primary mt-3"
-        onClick={() => {
-          addSongToPlaylist(currentSong);
-          alert(`"${currentSong.trackName}" added to My Playlist`);
-        }}
-      >
-        ➕ Add to Playlist
-      </button>
+        <button className="add-playlist-btn" onClick={handleAddToPlaylist}>
+          ➕ Add to Playlist
+        </button>
+      </div>
 
-      {/* ⏱ Progress Bar */}
       <input
         type="range"
         className="seek-bar"
@@ -106,31 +88,21 @@ function SongPage() {
         max="100"
         value={progress}
         onChange={(e) => {
-          const newValue = e.target.value;
-          setProgress(newValue);
-
-          if (audioRef.current && audioRef.current.duration) {
-            const newTime =
-              (newValue / 100) * audioRef.current.duration;
-            audioRef.current.currentTime = newTime;
-          }
+          const value = e.target.value;
+          setProgress(value);
+          audioRef.current.currentTime =
+            (value / 100) * audioRef.current.duration;
         }}
       />
 
-      {/* ▶️ Controls */}
       <div className="player-controls">
-        <button className="control-btn" onClick={prevSong}>
-          ⏮
-        </button>
-        <button className="play-btn-big" onClick={togglePlay}>
+        <button className="control-btn" onClick={prevSong}>⏮</button>
+        <button className="play-btn" onClick={togglePlay}>
           {isPlaying ? "⏸" : "▶️"}
         </button>
-        <button className="control-btn" onClick={nextSong}>
-          ⏭
-        </button>
+        <button className="control-btn" onClick={nextSong}>⏭</button>
       </div>
 
-      {/* 🔊 Audio */}
       <audio
         ref={audioRef}
         src={currentSong.previewUrl}
