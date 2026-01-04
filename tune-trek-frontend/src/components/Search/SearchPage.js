@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchSongs } from "../../api/axios";
-import { addSongToPlaylist } from "../../utils/playlistStorage"; // ✅ FIX
+import { addSongToPlaylist } from "../../utils/playlistStorage";
+import "./SearchPage.css";
 
 function SearchPage() {
   const [query, setQuery] = useState("");
@@ -49,55 +50,52 @@ function SearchPage() {
   };
 
   return (
-    <div className="container mt-4">
-      <h2>Search Songs</h2>
+    <div className="search-container">
+      <h2 className="search-title">Search Songs</h2>
 
-      <div className="d-flex gap-2 mb-3">
+      {/* 🔍 Search Box */}
+      <div className="search-box">
         <input
           type="text"
-          className="form-control"
           placeholder="Search by song name..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
 
-        <button
-          className="btn btn-primary"
-          onClick={() => handleSearch()}
-        >
+        <button onClick={() => handleSearch()}>
           Search
         </button>
       </div>
 
-      {message && <div className="alert alert-info">{message}</div>}
+      {message && <div className="search-message">{message}</div>}
 
+      {/* 🎵 Songs Grid */}
       <div className="row">
         {songs.map((song, index) => (
           <div
             key={song.trackId}
-            className="col-md-3 mb-4"
+            className="col-md-3 col-sm-6 mb-4"
             style={{ cursor: "pointer" }}
             onClick={() => openSongPage(index)}
           >
-            <div className="card h-100 text-center shadow-sm">
+            <div className="song-card h-100 text-center">
               <img
                 src={song.artworkUrl100}
-                className="card-img-top"
                 alt={song.trackName}
-                style={{ height: "180px", objectFit: "cover" }}
+                className="song-card-img"
               />
-              <div className="card-body">
-                <h6 className="card-title">{song.trackName}</h6>
-                <p className="card-text text-muted">
-                  {song.artistName}
-                </p>
 
+              <div className="card-body">
+                <h6>{song.trackName}</h6>
+                <p>{song.artistName}</p>
+
+                {/* ➕ Add to Playlist */}
                 <button
                   className="btn btn-sm btn-outline-primary mt-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     addSongToPlaylist(song);
-                    alert(`"${song.trackName}" added to My Playlist`);
+                    alert(`"${song.trackName}" added to playlist`);
                   }}
                 >
                   ➕ Add to Playlist
