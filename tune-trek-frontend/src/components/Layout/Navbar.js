@@ -44,15 +44,7 @@ function Navbar() {
           </li>
         </ul>
 
-        {/* Auth buttons */}
-        <div className="d-flex gap-2">
-          <Link className="btn btn-outline-light" to="/login">
-            Login
-          </Link>
-          <Link className="btn btn-primary" to="/register">
-            Register
-          </Link>
-        </div>
+        {/* Login & Register buttons removed */}
       </div>
     </nav>
   );
