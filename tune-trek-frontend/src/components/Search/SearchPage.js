@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchSongs } from "../../api/axios";
-import { addSongToPlaylist } from "../../utils/playlistStorage";
-import "./SearchPage.css";
 
 function SearchPage() {
   const [query, setQuery] = useState("");
@@ -50,10 +48,9 @@ function SearchPage() {
   };
 
   return (
-    <div className="search-container">
-      <h2 className="search-title">Search Songs</h2>
+    <div className="container mt-4">
+      <h2>Search Songs</h2>
 
-      {/* 🔍 Search Box */}
       <div className="search-box">
         <input
           type="text"
@@ -69,7 +66,6 @@ function SearchPage() {
 
       {message && <div className="search-message">{message}</div>}
 
-      {/* 🎵 Songs Grid */}
       <div className="row">
         {songs.map((song, index) => (
           <div
@@ -82,24 +78,15 @@ function SearchPage() {
               <img
                 src={song.artworkUrl100}
                 alt={song.trackName}
-                className="song-card-img"
+                style={{
+                  height: "180px",
+                  width: "100%",
+                  objectFit: "cover",
+                }}
               />
-
               <div className="card-body">
                 <h6>{song.trackName}</h6>
                 <p>{song.artistName}</p>
-
-                {/* ➕ Add to Playlist */}
-                <button
-                  className="btn btn-sm btn-outline-primary mt-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addSongToPlaylist(song);
-                    alert(`"${song.trackName}" added to playlist`);
-                  }}
-                >
-                  ➕ Add to Playlist
-                </button>
               </div>
             </div>
           </div>
