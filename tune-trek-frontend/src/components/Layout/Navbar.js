@@ -1,38 +1,57 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 function Navbar() {
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+    <nav className="navbar navbar-expand-lg px-4 gradient-navbar">
+      {/* Logo */}
       <Link className="navbar-brand fw-bold" to="/">
         🎧 TuneTrek
       </Link>
 
+      {/* Mobile toggle */}
       <button
         className="navbar-toggler"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
       >
         <span className="navbar-toggler-icon"></span>
       </button>
 
+      {/* Links */}
       <div className="collapse navbar-collapse" id="navbarNav">
-        <ul className="navbar-nav me-auto">
+        <ul className="navbar-nav me-auto gap-2">
           <li className="nav-item">
-            <Link className="nav-link" to="/explore">Explore</Link>
+            <NavLink className="nav-link" to="/explore">
+              Explore
+            </NavLink>
           </li>
+
           <li className="nav-item">
-            <Link className="nav-link" to="/search">Search</Link>
+            <NavLink className="nav-link" to="/search">
+              Search
+            </NavLink>
           </li>
+
           <li className="nav-item">
-            <Link className="nav-link" to="/playlists">Playlists</Link>
+            <NavLink className="nav-link" to="/playlists">
+              Playlists
+            </NavLink>
           </li>
         </ul>
 
-        <div className="d-flex">
-          <Link className="btn btn-outline-light mx-2" to="/login">Login</Link>
-          <Link className="btn btn-primary" to="/register">Register</Link>
+        {/* Auth buttons */}
+        <div className="d-flex gap-2">
+          <Link className="btn btn-outline-light" to="/login">
+            Login
+          </Link>
+          <Link className="btn btn-primary" to="/register">
+            Register
+          </Link>
         </div>
       </div>
     </nav>
