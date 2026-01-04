@@ -15,33 +15,36 @@ import Navbar from "./components/Layout/Navbar";
 function App() {
   return (
     <Router>
-      <Navbar />
+      {/* 🌙 GLOBAL GRADIENT WRAPPER */}
+      <div className="app-gradient">
+        <Navbar />
 
-      <Routes>
-        {/* Home */}
-        <Route path="/" element={<Home />} />
+        <Routes>
+          {/* Home */}
+          <Route path="/" element={<Home />} />
 
-        {/* Explore */}
-        <Route path="/explore" element={<ExplorePage />} />
+          {/* Explore */}
+          <Route path="/explore" element={<ExplorePage />} />
 
-        {/* Search */}
-        <Route path="/search" element={<SearchPage />} />
+          {/* Search */}
+          <Route path="/search" element={<SearchPage />} />
 
-        {/* Playlists */}
-        <Route path="/playlists" element={<PlaylistsPage />} />
+          {/* Playlists */}
+          <Route path="/playlists" element={<PlaylistsPage />} />
 
-        {/* Playlist Songs */}
-        <Route path="/playlist/:name" element={<PlaylistSongs />} />
+          {/* Playlist Songs */}
+          <Route path="/playlist/:name" element={<PlaylistSongs />} />
 
-        {/* Profile */}
-        <Route path="/profile" element={<ProfilePage />} />
+          {/* Profile */}
+          <Route path="/profile" element={<ProfilePage />} />
 
-        {/* Full Screen Player */}
-        <Route path="/song" element={<SongPage />} />
+          {/* Full Screen Player */}
+          <Route path="/song" element={<SongPage />} />
 
-        {/* Unknown Routes */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Unknown Routes */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
