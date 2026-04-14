@@ -18,16 +18,36 @@ function SongPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  const currentSong = songs[currentIndex];
+
+  // ✅ Redirect if no songs
   useEffect(() => {
-    if (!songs.length) navigate("/search");
+    if (!songs.length) {
+      navigate("/search");
+    }
   }, [songs, navigate]);
 
-  const currentSong = songs[currentIndex];
+  // ✅ Auto play when song changes
+  useEffect(() => {
+    if (audioRef.current && currentSong) {
+      audioRef.current.load();
+      audioRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  }, [currentIndex, currentSong]);
+
+  // ❗ AFTER hooks (IMPORTANT FIX)
   if (!currentSong) return null;
 
   const togglePlay = () => {
     if (!audioRef.current) return;
-    isPlaying ? audioRef.current.pause() : audioRef.current.play();
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(() => {});
+    }
+
     setIsPlaying(!isPlaying);
   };
 
@@ -35,18 +55,17 @@ function SongPage() {
     setCurrentIndex(
       currentIndex === 0 ? songs.length - 1 : currentIndex - 1
     );
-    setIsPlaying(true);
     setProgress(0);
   };
 
   const nextSong = () => {
     setCurrentIndex((currentIndex + 1) % songs.length);
-    setIsPlaying(true);
     setProgress(0);
   };
 
   const updateProgress = () => {
     if (!audioRef.current?.duration) return;
+
     setProgress(
       (audioRef.current.currentTime / audioRef.current.duration) * 100
     );
@@ -66,21 +85,24 @@ function SongPage() {
 
   return (
     <div className="song-container">
+
+      {/* 🎵 IMAGE */}
       <img
-        src={currentSong.artworkUrl100.replace("100x100", "500x500")}
+        src={currentSong.image?.replace("100x100", "400x400")}
         alt="album"
         className="album-img"
       />
 
       <div className="song-info">
-        <h2 className="song-title">{currentSong.trackName}</h2>
-        <p className="artist-name">{currentSong.artistName}</p>
+        <h2 className="song-title">{currentSong.title}</h2>
+        <p className="artist-name">{currentSong.artist}</p>
 
         <button className="add-playlist-btn" onClick={handleAddToPlaylist}>
           ➕ Add to Playlist
         </button>
       </div>
 
+      {/* 🎚 SEEK BAR */}
       <input
         type="range"
         className="seek-bar"
@@ -90,11 +112,15 @@ function SongPage() {
         onChange={(e) => {
           const value = e.target.value;
           setProgress(value);
-          audioRef.current.currentTime =
-            (value / 100) * audioRef.current.duration;
+
+          if (audioRef.current?.duration) {
+            audioRef.current.currentTime =
+              (value / 100) * audioRef.current.duration;
+          }
         }}
       />
 
+      {/* 🎮 CONTROLS */}
       <div className="player-controls">
         <button className="control-btn" onClick={prevSong}>⏮</button>
         <button className="play-btn" onClick={togglePlay}>
@@ -103,12 +129,14 @@ function SongPage() {
         <button className="control-btn" onClick={nextSong}>⏭</button>
       </div>
 
+      {/* 🔊 AUDIO */}
       <audio
         ref={audioRef}
-        src={currentSong.previewUrl}
+        src={currentSong.audio}
         onTimeUpdate={updateProgress}
         onEnded={nextSong}
       />
+
     </div>
   );
 }

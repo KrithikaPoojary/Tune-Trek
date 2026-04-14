@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { searchSongs } from "../api/axios"; // adjust path if needed
+import { searchSongs } from "../api/axios";
 
 function Home() {
   const navigate = useNavigate();
 
-  // Category states
   const [chillSongs, setChillSongs] = useState([]);
   const [romanticSongs, setRomanticSongs] = useState([]);
   const [partySongs, setPartySongs] = useState([]);
@@ -21,8 +20,9 @@ function Home() {
 
   const loadHomeSongs = async () => {
     try {
-      const chill = await searchSongs("lofi");
-      const romantic = await searchSongs("love");
+      // 🔥 Better queries (reduce repetition + better songs)
+      const chill = await searchSongs("chill");
+      const romantic = await searchSongs("romantic");
       const party = await searchSongs("party");
       const workout = await searchSongs("workout");
       const sad = await searchSongs("sad");
@@ -38,6 +38,7 @@ function Home() {
       setHappySongs(happy.slice(0, 8));
       setFocusSongs(focus.slice(0, 8));
       setSleepSongs(sleep.slice(0, 8));
+
     } catch (error) {
       console.error("Error loading home page songs", error);
     }
@@ -52,37 +53,47 @@ function Home() {
   const renderCategory = (title, songs) => (
     <>
       <h4 className="mt-5 mb-3">{title}</h4>
-      <div className="row">
-        {songs.map((song, index) => (
-          <div
-            key={song.trackId}
-            className="col-md-3 mb-4"
-            style={{ cursor: "pointer" }}
-            onClick={() => openSongPage(songs, index)}
-          >
-            <div className="card h-100 text-center shadow-sm">
-              <img
-                src={song.artworkUrl100}
-                alt={song.trackName}
-                className="card-img-top"
-                style={{ height: "180px", objectFit: "cover" }}
-              />
-              <div className="card-body">
-                <h6 className="card-title">{song.trackName}</h6>
-                <p className="card-text text-muted">
-                  {song.artistName}
-                </p>
+
+      {/* ✅ HANDLE EMPTY STATE */}
+      {songs.length === 0 ? (
+        <p>Loading songs...</p>
+      ) : (
+        <div className="row">
+          {songs.map((song, index) => (
+            <div
+              key={song.id}
+              className="col-md-3 mb-4"
+              style={{ cursor: "pointer" }}
+              onClick={() => openSongPage(songs, index)}
+            >
+              <div className="card h-100 text-center shadow-sm">
+
+                {/* ✅ BIGGER IMAGE (fix repeated look) */}
+                <img
+                  src={song.image?.replace("100x100", "300x300")}
+                  alt={song.title}
+                  className="card-img-top"
+                  style={{ height: "180px", objectFit: "cover" }}
+                />
+
+                <div className="card-body">
+                  <h6 className="card-title">{song.title}</h6>
+                  <p className="card-text text-muted">
+                    {song.artist}
+                  </p>
+                </div>
+
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </>
   );
 
   return (
     <div className="container mt-5">
-      {/* HERO SECTION */}
+      {/* HERO */}
       <div className="text-center mb-5">
         <h1>🎧 Welcome to TuneTrek</h1>
         <p className="lead">
