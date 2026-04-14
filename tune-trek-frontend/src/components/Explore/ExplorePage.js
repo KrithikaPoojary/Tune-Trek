@@ -9,10 +9,12 @@ function ExplorePage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ SAME categories as Home page
+  // 🔥 NEW STATE for Load More
+  const [visibleCount, setVisibleCount] = useState(12);
+
   const categories = [
-    { title: "Chill", query: "lofi" },
-    { title: "Romantic Songs", query: "love" },
+    { title: "Chill", query: "chill" },
+    { title: "Romantic Songs", query: "romantic" },
     { title: "Party Songs", query: "party" },
     { title: "Workout Songs", query: "workout" },
     { title: "Sad Songs", query: "sad" },
@@ -25,10 +27,16 @@ function ExplorePage() {
     try {
       setLoading(true);
       setSelectedCategory(category.title);
+
+      // 🔥 RESET visible count when new category selected
+      setVisibleCount(12);
+
       const results = await searchSongs(category.query);
-      setSongs(results.slice(0, 12));
+
+      setSongs(Array.isArray(results) ? results : []);
     } catch (error) {
       console.error("Error loading explore songs", error);
+      setSongs([]);
     } finally {
       setLoading(false);
     }
@@ -61,47 +69,56 @@ function ExplorePage() {
         ))}
       </div>
 
-      {/* EMPTY STATE */}
-      {!loading && songs.length === 0 && (
-        <p className="text-muted">
-          Select a category to explore songs 🎶
-        </p>
-      )}
-
       {/* LOADING */}
       {loading && <p>Loading songs...</p>}
+
+      {/* EMPTY */}
+      {!loading && songs.length === 0 && selectedCategory && (
+        <p className="text-muted">No songs found 😢</p>
+      )}
 
       {/* SONG LIST */}
       {!loading && songs.length > 0 && (
         <>
           <h4 className="mb-3">{selectedCategory}</h4>
+
           <div className="row">
-            {songs.map((song, index) => (
+            {songs.slice(0, visibleCount).map((song, index) => (
               <div
-                key={song.trackId}
+                key={song.id}
                 className="col-md-3 mb-4"
                 style={{ cursor: "pointer" }}
                 onClick={() => openSongPage(index)}
               >
                 <div className="card h-100 text-center shadow-sm">
                   <img
-                    src={song.artworkUrl100}
-                    alt={song.trackName}
+                    src={song.image}
+                    alt={song.title}
                     className="card-img-top"
                     style={{ height: "180px", objectFit: "cover" }}
                   />
                   <div className="card-body">
-                    <h6 className="card-title">
-                      {song.trackName}
-                    </h6>
+                    <h6 className="card-title">{song.title}</h6>
                     <p className="card-text text-muted">
-                      {song.artistName}
+                      {song.artist}
                     </p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* 🔥 LOAD MORE BUTTON */}
+          {visibleCount < songs.length && (
+            <div className="text-center">
+              <button
+                className="btn btn-success"
+                onClick={() => setVisibleCount(prev => prev + 12)}
+              >
+                Load More 🎵
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

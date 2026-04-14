@@ -16,6 +16,7 @@ function SearchPage() {
     const finalQuery = searchText || query;
 
     setMessage("");
+
     if (!finalQuery || !finalQuery.trim()) {
       setMessage("Please enter a search term.");
       return;
@@ -23,9 +24,13 @@ function SearchPage() {
 
     try {
       const results = await searchSongs(finalQuery);
-      setSongs(results);
 
-      if (results.length === 0) {
+      // ✅ SAFETY CHECK
+      const safeResults = Array.isArray(results) ? results : [];
+
+      setSongs(safeResults);
+
+      if (safeResults.length === 0) {
         setMessage("No songs found.");
       }
     } catch (err) {
@@ -51,7 +56,8 @@ function SearchPage() {
     <div className="container mt-4">
       <h2>Search Songs</h2>
 
-      <div className="search-box">
+      {/* 🔍 SEARCH BOX */}
+      <div className="search-box mb-4">
         <input
           type="text"
           placeholder="Search by song name..."
@@ -64,30 +70,39 @@ function SearchPage() {
         </button>
       </div>
 
-      {message && <div className="search-message">{message}</div>}
+      {/* ⚠ MESSAGE */}
+      {message && <div className="text-danger mb-3">{message}</div>}
 
+      {/* 🎵 SONG LIST */}
       <div className="row">
         {songs.map((song, index) => (
           <div
-            key={song.trackId}
+            key={song.id}   // ✅ FIXED
             className="col-md-3 col-sm-6 mb-4"
             style={{ cursor: "pointer" }}
             onClick={() => openSongPage(index)}
           >
-            <div className="song-card h-100 text-center">
+            <div className="song-card h-100 text-center shadow-sm">
+              
+              {/* ✅ FIXED IMAGE */}
               <img
-                src={song.artworkUrl100}
-                alt={song.trackName}
+                src={song.image}
+                alt={song.title}
                 style={{
                   height: "180px",
                   width: "100%",
                   objectFit: "cover",
                 }}
               />
+
               <div className="card-body">
-                <h6>{song.trackName}</h6>
-                <p>{song.artistName}</p>
+                {/* ✅ FIXED TITLE */}
+                <h6>{song.title}</h6>
+
+                {/* ✅ FIXED ARTIST */}
+                <p className="text-muted">{song.artist}</p>
               </div>
+
             </div>
           </div>
         ))}
