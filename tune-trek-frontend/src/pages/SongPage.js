@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getPlaylists,
@@ -11,7 +11,9 @@ function SongPage() {
   const navigate = useNavigate();
   const audioRef = useRef(null);
 
-  const songs = state?.songs || [];
+  // ✅ FIX: stable songs reference
+  const songs = useMemo(() => state?.songs || [], [state]);
+
   const startIndex = state?.index || 0;
 
   const [currentIndex, setCurrentIndex] = useState(startIndex);
@@ -36,9 +38,10 @@ function SongPage() {
     }
   }, [currentIndex, currentSong]);
 
-  // ❗ AFTER hooks (IMPORTANT FIX)
+  // ❗ Safety check AFTER hooks
   if (!currentSong) return null;
 
+  // 🎮 PLAY / PAUSE
   const togglePlay = () => {
     if (!audioRef.current) return;
 
@@ -51,6 +54,7 @@ function SongPage() {
     setIsPlaying(!isPlaying);
   };
 
+  // ⏮ PREVIOUS
   const prevSong = () => {
     setCurrentIndex(
       currentIndex === 0 ? songs.length - 1 : currentIndex - 1
@@ -58,11 +62,13 @@ function SongPage() {
     setProgress(0);
   };
 
+  // ⏭ NEXT
   const nextSong = () => {
     setCurrentIndex((currentIndex + 1) % songs.length);
     setProgress(0);
   };
 
+  // 🎚 PROGRESS UPDATE
   const updateProgress = () => {
     if (!audioRef.current?.duration) return;
 
@@ -71,33 +77,56 @@ function SongPage() {
     );
   };
 
-  const handleAddToPlaylist = async () => {
-    try {
-      const res = await getPlaylists();
-      const playlistId = res.data[0]._id;
-      await addSongToPlaylist(playlistId, currentSong);
-      alert("Song added to MongoDB playlist");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to add song");
+const handleAddToPlaylist = async () => {
+  try {
+    const playlists = await getPlaylists(); // ✅ FIX
+
+    if (!playlists || playlists.length === 0) {
+      alert("No playlist found ❌");
+      return;
     }
-  };
+
+    const playlistId = playlists[0]._id; // ✅ FIX
+
+    const songData = {
+      trackId: currentSong.id,
+      trackName: currentSong.title,
+      artistName: currentSong.artist,
+      artworkUrl100: currentSong.image,
+      previewUrl: currentSong.audio
+    };
+
+    console.log("Sending:", songData); // 🔍 debug
+
+    await addSongToPlaylist(playlistId, songData);
+
+    alert("Song added to playlist ✅");
+
+  } catch (err) {
+    console.error("Add playlist error:", err);
+    alert("Failed to add song ❌");
+  }
+};
 
   return (
     <div className="song-container">
 
       {/* 🎵 IMAGE */}
       <img
-        src={currentSong.image?.replace("100x100", "400x400")}
+        src={currentSong.image}
         alt="album"
         className="album-img"
       />
 
+      {/* 🎵 INFO */}
       <div className="song-info">
         <h2 className="song-title">{currentSong.title}</h2>
         <p className="artist-name">{currentSong.artist}</p>
 
-        <button className="add-playlist-btn" onClick={handleAddToPlaylist}>
+        <button
+          className="add-playlist-btn"
+          onClick={handleAddToPlaylist}
+        >
           ➕ Add to Playlist
         </button>
       </div>
@@ -123,9 +152,11 @@ function SongPage() {
       {/* 🎮 CONTROLS */}
       <div className="player-controls">
         <button className="control-btn" onClick={prevSong}>⏮</button>
+
         <button className="play-btn" onClick={togglePlay}>
           {isPlaying ? "⏸" : "▶️"}
         </button>
+
         <button className="control-btn" onClick={nextSong}>⏭</button>
       </div>
 
@@ -136,7 +167,6 @@ function SongPage() {
         onTimeUpdate={updateProgress}
         onEnded={nextSong}
       />
-
     </div>
   );
 }

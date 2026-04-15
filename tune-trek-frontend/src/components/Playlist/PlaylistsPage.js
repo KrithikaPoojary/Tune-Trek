@@ -6,22 +6,25 @@ function PlaylistsPage() {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPlaylist = async () => {
-      try {
-        const res = await getPlaylists();
+  const fetchPlaylist = async () => {
+    try {
+      const data = await getPlaylists(); // ✅ already res.data
 
-        // Default playlist (first one)
-        if (res.data.length > 0) {
-          setSongs(res.data[0].songs);
-        }
-      } catch (error) {
-        console.error("Failed to load playlist", error);
-      } finally {
-        setLoading(false);
+      console.log("PLAYLIST DATA:", data); // 🔍 debug
+
+      if (data.length > 0) {
+        setSongs(data[0].songs || []); // ✅ CORRECT FIX
+      } else {
+        setSongs([]);
       }
-    };
+    } catch (error) {
+      console.error("Failed to load playlist", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPlaylist();
   }, []);
 

@@ -11,9 +11,9 @@ exports.searchSongs = async (req, res) => {
   try {
     let searchTerm = query.toLowerCase();
 
-    // 🎯 Category Mapping
+    // 🎯 Category Mapping (balanced – not too strict)
     if (searchTerm === "chill") {
-      searchTerm = "lofi chill indian";
+      searchTerm = "lofi chill hindi tamil";
     } 
     else if (searchTerm === "romantic") {
       searchTerm = "romantic bollywood songs";
@@ -25,19 +25,19 @@ exports.searchSongs = async (req, res) => {
       searchTerm = "bollywood workout songs";
     } 
     else if (searchTerm === "sad") {
-      searchTerm = "sad bollywood songs";
+      searchTerm = "sad hindi songs";
     } 
     else if (searchTerm === "happy") {
-      searchTerm = "happy bollywood songs";
+      searchTerm = "happy hindi songs";
     } 
     else if (searchTerm === "study") {
-      searchTerm = "instrumental study indian";
+      searchTerm = "instrumental study music";
     } 
     else if (searchTerm === "sleep") {
-      searchTerm = "relax calm sleep indian";
+      searchTerm = "relax calm music";
     }
 
-    // 🌐 API CALL
+    // 🌐 iTunes API
     const url = `https://itunes.apple.com/search?term=${encodeURIComponent(
       searchTerm
     )}&limit=50&media=music`;
@@ -47,23 +47,31 @@ exports.searchSongs = async (req, res) => {
     const uniqueTitles = new Set();
     const imageCount = {};
 
-    const apiSongs = (response.data.results || [])
-      .filter(song => {
-        if (!song.previewUrl || !song.trackName || !song.artistName) return false;
+    let apiSongs = (response.data.results || [])
 
+      // ✅ Basic validation
+      .filter(song => 
+        song.previewUrl &&
+        song.trackName &&
+        song.artistName
+      )
+
+      // 🔥 Balanced filtering (NOT TOO STRICT)
+      .filter(song => {
         const name = song.trackName.toLowerCase();
         const artist = song.artistName.toLowerCase();
 
-        if (query !== "workout") {
-          if (
-            name.includes("workout") ||
-            name.includes("fitness") ||
-            name.includes("gym") ||
-            name.includes("running")
-          ) return false;
-        }
+        // ❌ remove only worst results
+        if (
+          name.includes("mix") ||
+          name.includes("collection") ||
+          name.includes("karaoke")
+        ) return false;
 
-        if (artist.includes("dj") || artist.includes("various")) return false;
+        if (
+          artist.includes("dj") ||
+          artist.includes("various")
+        ) return false;
 
         return true;
       })
@@ -75,16 +83,16 @@ exports.searchSongs = async (req, res) => {
         return true;
       })
 
+      // ✅ Format + fix images
       .map(song => {
         let imageUrl = song.artworkUrl100
           ? song.artworkUrl100.replace("100x100", "500x500")
           : null;
 
-        // 🔥 COUNT IMAGE REPEAT
+        // 🔥 Handle repeated images
         if (imageUrl) {
           imageCount[imageUrl] = (imageCount[imageUrl] || 0) + 1;
 
-          // ❌ If same image used more than 2 times → replace
           if (imageCount[imageUrl] > 2) {
             imageUrl = `https://picsum.photos/300?random=${song.trackId}`;
           }
@@ -100,6 +108,19 @@ exports.searchSongs = async (req, res) => {
           image: imageUrl
         };
       });
+
+    // 🔥 FALLBACK (IMPORTANT – prevents empty screen)
+    if (apiSongs.length === 0) {
+      apiSongs = (response.data.results || []).slice(0, 10).map(song => ({
+        id: song.trackId,
+        title: song.trackName,
+        artist: song.artistName,
+        audio: song.previewUrl,
+        image: song.artworkUrl100
+          ? song.artworkUrl100.replace("100x100", "500x500")
+          : `https://picsum.photos/300?random=${song.trackId}`
+      }));
+    }
 
     res.json(apiSongs);
 
